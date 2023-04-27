@@ -11,13 +11,13 @@ import {
   unauthorizedHandler,
 } from "./errorHandlers.js";
 import createHttpError from "http-errors";
-import { createServer } from "http";
-import { Server } from "socket.io";
 import usersRouter from "./api/user/index.js";
-// import googleStrategy from "./lib/auth/googleOauth.js";
+import googleStrategy from "./lib/auth/googleOauth.js";
 
 const server = Express();
 const port = process.env.PORT || 3005;
+
+passport.use("google", googleStrategy);
 
 //Cors
 const whiteList = [process.env.FE_DEV_URL, process.env.FE_PROD_URL];

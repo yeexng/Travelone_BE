@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 export const badRequestHandler = (err, req, res, next) => {
   if (err.status === 400 || err instanceof mongoose.Error.ValidationError) {
     res.status(400).send({ message: err.message });

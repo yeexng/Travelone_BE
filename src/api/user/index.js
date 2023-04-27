@@ -3,8 +3,8 @@ import createError from "http-errors";
 import UsersModel from "./model.js";
 import passport from "passport";
 import { avatarUploader } from "../../lib/cloudinary.js";
-// import { JWTAuthMiddleware } from "../../lib/auth/jwt.js";
-// import { createAccessToken } from "../../lib/auth/tools.js";
+import { JWTAuthMiddleware } from "../../lib/auth/jwt.js";
+import { createAccessToken } from "../../lib/auth/tools.js";
 
 const usersRouter = express.Router();
 
@@ -72,7 +72,7 @@ usersRouter.get(
 );
 
 //Get All Users
-usersRouter.get("/", async (req, res, next) => {
+usersRouter.get("/", JWTAuthMiddleware, async (req, res, next) => {
   try {
     const users = await UsersModel.find();
     res.send(users);
@@ -82,15 +82,29 @@ usersRouter.get("/", async (req, res, next) => {
 });
 
 // Get own info
-usersRouter.get("/me", async (req, res, next) => {
+usersRouter.get("/me", JWTAuthMiddleware, async (req, res, next) => {
   try {
     const user = await UsersModel.findById(req.user._id); //the parameter might need to change
     res.send(user);
   } catch (error) {}
 });
 
+//Edit own info
+usersRouter.put("/me", JWTAuthMiddleware, async (req, res, next) => {
+  try {
+    const updatedUser = await UsersModel.findOneAndUpdate(
+      { _id: req.user._id }, //this need a second check if this parameter is actually passing the need id
+      req.body,
+      { new: true, runValidators: true }
+    );
+    res.send(updatedUser);
+  } catch (error) {
+    next(error);
+  }
+});
+
 //Get users by ID
-usersRouter.get("/:userId", async (req, res, next) => {
+usersRouter.get("/:userId", JWTAuthMiddleware, async (req, res, next) => {
   try {
     const user = await UsersModel.findById(req.params.userId);
     if (user) {
@@ -104,12 +118,17 @@ usersRouter.get("/:userId", async (req, res, next) => {
 });
 
 //Set an avatar
-usersRouter.post("/me/avatar", avatarUploader, async (req, res, next) => {
-  await UsersModel.findByIdAndUpdate(req, {
-    // need to fix the req params after declare UserRequest
-    avatar: req.file?.path,
-  });
-  res.send({ avatarURL: req.file?.path });
-});
+usersRouter.post(
+  "/me/avatar",
+  JWTAuthMiddleware,
+  avatarUploader,
+  async (req, res, next) => {
+    await UsersModel.findByIdAndUpdate(req, {
+      // need to fix the req params after declare UserRequest
+      avatar: req.file?.path,
+    });
+    res.send({ avatarURL: req.file?.path });
+  }
+);
 
 export default usersRouter;
