@@ -1,5 +1,7 @@
-import express from "express";
+import Express from "express";
+import listEndpoints from "express-list-endpoints";
 import cors from "cors";
+import mongoose from "mongoose";
 import passport from "passport";
 import {
   badRequestHandler,
@@ -8,16 +10,14 @@ import {
   notFoundHandler,
   unauthorizedHandler,
 } from "./errorHandlers.js";
-// import googleStrategy from "./lib/auth/googleOauth.js";
 import createHttpError from "http-errors";
+import { createServer } from "http";
+import { Server } from "socket.io";
+import usersRouter from "./api/user/index.js";
+// import googleStrategy from "./lib/auth/googleOauth.js";
 
-const expressServer = express();
-
-//socket.io
-const httpServer = createServer(expressServer);
-const socketioServer = new Server(httpServer);
-socketioServer.on("connect", newConnectionHandler);
-passport.use("google", googleStrategy);
+const server = Express();
+const port = process.env.PORT || 3005;
 
 //Cors
 const whiteList = [process.env.FE_DEV_URL, process.env.FE_PROD_URL];
@@ -33,16 +33,26 @@ const corsOptions = {
   },
 };
 
-expressServer.use(cors(corsOptions));
-expressServer.use(express.json());
+server.use(cors(corsOptions));
+server.use(Express.json());
+server.use(passport.initialize());
 
 //Endpoints
+server.use("/users", usersRouter);
 
 //Error Handlers
-expressServer.use(badRequestHandler);
-expressServer.use(unauthorizedHandler);
-expressServer.use(forbiddenHandler);
-expressServer.use(notFoundHandler);
-expressServer.use(genericErrorHandler);
+server.use(badRequestHandler);
+server.use(unauthorizedHandler);
+server.use(forbiddenHandler);
+server.use(notFoundHandler);
+server.use(genericErrorHandler);
 
-export { httpServer, expressServer };
+mongoose.connect(process.env.MONGO_DEV_URL);
+
+mongoose.connection.on("connected", () => {
+  console.log(`✅ Successfully connected to Mongo!`);
+  server.listen(port, () => {
+    console.table(listEndpoints(server));
+    console.log(`✅ Server is running on port ${port}`);
+  });
+});
