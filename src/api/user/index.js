@@ -55,7 +55,11 @@ usersRouter.post("/login", async (req, res, next) => {
 //Google Login
 usersRouter.get(
   "/googleLogin",
-  passport.authenticate("google", { scope: ["profile", "email"] })
+  passport.authenticate(
+    "google",
+    { scope: ["profile", "email"] },
+    { session: false }
+  )
 );
 
 usersRouter.get(
@@ -81,15 +85,15 @@ usersRouter.get("/", JWTAuthMiddleware, async (req, res, next) => {
   }
 });
 
-// Get own info
-usersRouter.get("/me", JWTAuthMiddleware, async (req, res, next) => {
+// Get own info --- not working
+usersRouter.get("/me", async (req, res, next) => {
   try {
     const user = await UsersModel.findById(req.user._id); //the parameter might need to change
     res.send(user);
   } catch (error) {}
 });
 
-//Edit own info
+//Edit own info --- not working
 usersRouter.put("/me", JWTAuthMiddleware, async (req, res, next) => {
   try {
     const updatedUser = await UsersModel.findOneAndUpdate(
@@ -104,7 +108,7 @@ usersRouter.put("/me", JWTAuthMiddleware, async (req, res, next) => {
 });
 
 //Get users by ID
-usersRouter.get("/:userId", JWTAuthMiddleware, async (req, res, next) => {
+usersRouter.get("/:userId", async (req, res, next) => {
   try {
     const user = await UsersModel.findById(req.params.userId);
     if (user) {
