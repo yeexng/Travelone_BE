@@ -31,4 +31,11 @@ tripsSchema.static("findTripsWithUsers", async function (query) {
   return { trips, total };
 });
 
+tripsSchema.static("findTripWithUser", async function (id) {
+  const trip = await this.findById(id).populate({
+    path: "user",
+  });
+  return trip;
+});
+
 export default model("trips", tripsSchema);

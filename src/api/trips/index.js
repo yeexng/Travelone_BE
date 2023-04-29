@@ -8,7 +8,7 @@ import UserModel from "../user/model.js";
 const tripsRouter = express.Router();
 
 //Adding new trip
-tripsRouter.post("/trips", async (req, res, next) => {
+tripsRouter.post("/", async (req, res, next) => {
   try {
     const newTrip = new TripModel(req.body);
     const { _id } = await newTrip.save();
@@ -19,7 +19,7 @@ tripsRouter.post("/trips", async (req, res, next) => {
 });
 
 //Getting all the trip
-tripsRouter.get("/trips", async (req, res, next) => {
+tripsRouter.get("/", async (req, res, next) => {
   try {
     const mongoQuery = q2m(req.query);
     const { trips, total } = await TripModel.findTripsWithUsers(mongoQuery);
@@ -35,56 +35,21 @@ tripsRouter.get("/trips", async (req, res, next) => {
 });
 
 //Get a single trip
-tripsRouter.get("/trips/:tripId", async (req, res, next) => {
+tripsRouter.get("/:tripId", async (req, res, next) => {
   try {
-  } catch (error) {}
-});
-
-//Adding new trip
-tripsRouter.post("/:userId/trips", async (req, res, next) => {
-  try {
-    if (user) {
-      const newTrip = new TripModel(req.body);
-      const { _id } = await newTrip.save();
-      const updatedUser = await UserModel.findByIdAndUpdate(
-        req.params.userId,
-        { $push: { trips: _id } },
-        { new: true, runValidators: true }
-      );
-      res.status(201).send({ updatedUser: updatedUser });
+    const trip = await TripModel.findTripWithUser(req.params.tripId);
+    if (trip) {
+      res.send(trip);
     } else {
-      createHttpError(
-        404,
-        `User with the id: ${req.params.userId} was not found!`
+      next(
+        createHttpError(404, `Trip with ID ${req.params.tripId} not found!`)
       );
-    }
-  } catch (error) {
-    next(error);
-  }
-});
-
-//Get user's single trip
-tripsRouter.get("/:userId/trips/:tripId", async (req, res, next) => {
-  try {
-    const user = await UserModel.findById(req.params.userId);
-    if (user) {
-      const trip = user.trips.find(
-        (e) => e._id.toString() === req.params.tripId
-      );
-      if (trip) {
-        res.send(trip);
-      } else {
-        createHttpError(
-          404,
-          `Trip with the id: ${req.params.tripId} was not found!`
-        );
-      }
     }
   } catch (error) {}
 });
 
 //Editing Trip
-tripsRouter.put("/:userId/trips/:tripId", async (req, res, next) => {
+tripsRouter.put("/:tripId", async (req, res, next) => {
   try {
     const updatedTrip = await TripModel.findByIdAndUpdate(
       req.params.tripId,
@@ -105,15 +70,10 @@ tripsRouter.put("/:userId/trips/:tripId", async (req, res, next) => {
 });
 
 //Delete Trip
-tripsRouter.delete("/:userId/trips/:tripId", async (req, res, next) => {
+tripsRouter.delete("/:tripId", async (req, res, next) => {
   try {
-    const trip = await TripModel.findByIdAndDelete(req.params.tripId);
-    await UserModel.findByIdAndUpdate(
-      req.params.userId,
-      { $pull: { trips: req.params.tripId } },
-      { new: true, runValidators: true }
-    );
-    if (experience) {
+    const deletedTrip = await TripModel.findByIdAndDelete(req.params.tripId);
+    if (deletedTrip) {
       res.status(204).send();
     } else {
       createHttpError(
@@ -121,7 +81,9 @@ tripsRouter.delete("/:userId/trips/:tripId", async (req, res, next) => {
         `Trip with the id: ${req.params.tripId} was not found!`
       );
     }
-  } catch (error) {}
+  } catch (error) {
+    next(error);
+  }
 });
 
 export default tripsRouter;
