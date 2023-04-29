@@ -14,6 +14,7 @@ import createHttpError from "http-errors";
 import usersRouter from "./api/user/index.js";
 import googleStrategy from "./lib/auth/googleOauth.js";
 import tripsRouter from "./api/trips/index.js";
+import postsRouter from "./api/hiddenGems/index.js";
 
 const server = Express();
 const port = process.env.PORT || 3005;
@@ -41,6 +42,7 @@ server.use(passport.initialize());
 //Endpoints
 server.use("/users", usersRouter);
 server.use("/trips", tripsRouter);
+server.use("/posts", postsRouter);
 
 //Error Handlers
 server.use(badRequestHandler);
