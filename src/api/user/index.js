@@ -9,7 +9,7 @@ import { createAccessToken } from "../../lib/auth/tools.js";
 const usersRouter = express.Router();
 
 //Sign Up
-usersRouter.post("/signUp", async (req, res, next) => {
+usersRouter.post("/account", async (req, res, next) => {
   try {
     const emailInUse = await UsersModel.findOne({ email: req.body.email }); //to check if the email is already been registered
     if (!emailInUse) {

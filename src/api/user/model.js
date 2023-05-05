@@ -10,6 +10,9 @@ const usersSchema = new Schema(
     email: { type: String, required: true },
     password: { type: String, required: true },
     emergencyContact: { type: String, required: true },
+    gender: { type: String },
+    aboutMe: { type: String },
+    dateOfBirth: { type: Date },
     avatar: {
       type: String,
       required: true,
