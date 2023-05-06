@@ -8,15 +8,18 @@ const tripsSchema = new Schema(
     title: { type: String, required: true },
     destination: { type: String, required: true },
     date: { type: Date, required: true },
-    details: { type: String },
     lookingFor: {
       type: String,
-      enum: ["Male", "Female", "Any"],
-      required: true,
+      // enum: ["Male", "Female", "Any"],
+      // required: true,
     },
     typeOfJourney: { type: String },
-    splitCost: { type: String, enum: ["YES", "NO"], required: true },
+    splitCost: {
+      type: String,
+      // enum: ["YES", "NO"], required: true
+    },
     budget: { type: Number },
+    addOns: { type: String },
   },
   { timestamps: true }
 );
