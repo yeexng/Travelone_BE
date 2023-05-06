@@ -94,14 +94,20 @@ usersRouter.get("/me", async (req, res, next) => {
 });
 
 //Edit own info --- not working
-usersRouter.put("/me", JWTAuthMiddleware, async (req, res, next) => {
+usersRouter.put("/:userId", async (req, res, next) => {
   try {
     const updatedUser = await UsersModel.findOneAndUpdate(
-      { _id: req.user._id }, //this need a second check if this parameter is actually passing the need id
+      req.params.userId,
       req.body,
       { new: true, runValidators: true }
     );
-    res.send(updatedUser);
+    if (updatedUser) {
+      res.send(updatedUser);
+    } else {
+      next(
+        createHttpError(404, `User with id ${req.params.userId} not found!`)
+      );
+    }
   } catch (error) {
     next(error);
   }
