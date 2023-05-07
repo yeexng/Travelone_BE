@@ -11,8 +11,8 @@ const tripsRouter = express.Router();
 tripsRouter.post("/", async (req, res, next) => {
   try {
     const newTrip = new TripModel(req.body);
-    const { _id } = await newTrip.save();
-    res.status(201).send({ _id });
+    const trip = await newTrip.save();
+    res.status(201).send({ trip });
   } catch (error) {
     next(error);
   }
