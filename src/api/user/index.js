@@ -97,7 +97,7 @@ usersRouter.get("/me", async (req, res, next) => {
 usersRouter.put("/:userId", async (req, res, next) => {
   try {
     const updatedUser = await UsersModel.findOneAndUpdate(
-      req.params.userId,
+      { _id: req.params.userId },
       req.body,
       { new: true, runValidators: true }
     );
