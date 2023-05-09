@@ -10,18 +10,21 @@ const commentsSchema = new Schema(
   { timestamps: true }
 );
 
-const postsSchema = new Schema({
-  user: { type: Schema.Types.ObjectId, ref: "User" },
-  title: { type: String, required: true },
-  locations: { type: String },
-  details: { type: String },
-  image: {
-    type: String,
-    default:
-      "https://images.unsplash.com/photo-1682595167681-888983414521?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80",
+const postsSchema = new Schema(
+  {
+    user: { type: Schema.Types.ObjectId, ref: "User" },
+    title: { type: String, required: true },
+    locations: { type: String },
+    details: { type: String },
+    image: {
+      type: String,
+      default:
+        "https://images.unsplash.com/photo-1682595167681-888983414521?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80",
+    },
+    comments: [commentsSchema],
   },
-  comments: [commentsSchema],
-});
+  { timestamps: true }
+);
 
 postsSchema.static("findPostsWithUsers", async function (query) {
   const posts = await this.find(query.criteria, query.options.fields)
