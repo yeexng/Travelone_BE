@@ -128,17 +128,20 @@ usersRouter.get("/:userId", async (req, res, next) => {
 });
 
 //Set an avatar
-usersRouter.post(
-  "/me/avatar",
-  JWTAuthMiddleware,
-  avatarUploader,
-  async (req, res, next) => {
-    await UsersModel.findByIdAndUpdate(req, {
-      // need to fix the req params after declare UserRequest
-      avatar: req.file?.path,
-    });
-    res.send({ avatarURL: req.file?.path });
+usersRouter.post("/:userId/avatar", avatarUploader, async (req, res, next) => {
+  try {
+    const user = await UsersModel.findById(req.params.userId);
+    if (user) {
+      user.avatar = req.file.path;
+      await user.save();
+      res.status(201).send({
+        success: "true",
+        message: `Image has been added to avatar with id ${req.params.userId}!`,
+      });
+    }
+  } catch (error) {
+    console.log(error);
   }
-);
+});
 
 export default usersRouter;
