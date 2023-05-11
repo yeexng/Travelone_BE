@@ -128,7 +128,7 @@ usersRouter.get("/:userId", async (req, res, next) => {
 });
 
 //Set an avatar
-usersRouter.post("/:userId/avatar", avatarUploader, async (req, res, next) => {
+usersRouter.put("/:userId/avatar", avatarUploader, async (req, res, next) => {
   try {
     const user = await UsersModel.findById(req.params.userId);
     if (user) {
@@ -138,6 +138,10 @@ usersRouter.post("/:userId/avatar", avatarUploader, async (req, res, next) => {
         success: "true",
         message: `Image has been added to avatar with id ${req.params.userId}!`,
       });
+    } else {
+      next(
+        createHttpError(404, `User with ID ${req.params.userId} not found!`)
+      );
     }
   } catch (error) {
     console.log(error);
