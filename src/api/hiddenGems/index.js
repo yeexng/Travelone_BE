@@ -98,7 +98,7 @@ postsRouter.delete("/:postId", async (req, res, next) => {
 });
 
 //POST an image to a post
-postsRouter.post(
+postsRouter.put(
   "/:postId/image",
   cloudinaryUploader,
   async (req, res, next) => {
