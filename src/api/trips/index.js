@@ -86,4 +86,46 @@ tripsRouter.delete("/:tripId", async (req, res, next) => {
   }
 });
 
+//Chat Features
+tripsRouter.post("/:tripId/chats", async (req, res, next) => {
+  try {
+    const newChat = req.body;
+    const newChatToInsert = {
+      ...newChat,
+    };
+    const updatedChats = await TripModel.findByIdAndUpdate(
+      req.params.tripId,
+      { $push: { chatHistory: newChatToInsert } },
+      { new: true, runValidators: true }
+    );
+    if (updatedChats) {
+      res.status(201).send(updatedChats);
+    } else {
+      next(
+        createHttpError(404, `Trip with id ${req.params.tripId} not found!`)
+      );
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+tripsRouter.get("/:tripId/chats", async (req, res, next) => {
+  try {
+    const trip = await TripModel.findById(req.params.tripId);
+    if (trip) {
+      res.send(trip.chatHistory);
+    } else {
+      next(
+        createHttpError(
+          404,
+          `ChatHistory with id ${req.params.tripId} not found!`
+        )
+      );
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default tripsRouter;

@@ -2,6 +2,14 @@ import mongoose from "mongoose";
 
 const { Schema, model } = mongoose;
 
+const chatHistorySchema = new Schema(
+  {
+    sender: { type: Schema.Types.ObjectId, ref: "User" },
+    text: { type: String },
+  },
+  { timestamps: true }
+);
+
 const tripsSchema = new Schema(
   {
     user: { type: Schema.Types.ObjectId, ref: "User" },
@@ -20,6 +28,8 @@ const tripsSchema = new Schema(
     },
     budget: { type: Number },
     addOns: { type: String },
+    adventurers: { type: [Schema.Types.ObjectId], ref: "User" },
+    chatHistory: [chatHistorySchema],
   },
   { timestamps: true }
 );
@@ -29,7 +39,7 @@ tripsSchema.static("findTripsWithUsers", async function (query) {
     .limit(query.options.limit)
     .skip(query.options.skip)
     .sort(query.options.sort)
-    .populate({ path: "user" });
+    .populate({ path: "user adventurers chatHistory.sender" });
   const total = await this.countDocuments(query.criteria);
   return { trips, total };
 });
