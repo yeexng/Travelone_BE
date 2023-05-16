@@ -5,7 +5,6 @@ import q2m from "query-to-mongo";
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
-import { pipeline } from "stream";
 
 const postsRouter = express.Router();
 

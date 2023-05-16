@@ -26,7 +26,7 @@ const postsSchema = new Schema(
   { timestamps: true }
 );
 
-postsSchema.static("findPostsWithUsers", async function (query) {
+postsSchema.statics.findPostsWithUsers = async function (query) {
   const posts = await this.find(query.criteria, query.options.fields)
     .limit(query.options.limit)
     .skip(query.options.skip)
@@ -36,13 +36,13 @@ postsSchema.static("findPostsWithUsers", async function (query) {
     });
   const total = await this.countDocuments(query.criteria);
   return { posts, total };
-});
+};
 
-postsSchema.static("findPostWithUser", async function (id) {
+postsSchema.statics.findPostWithUser = async function (id) {
   const post = await this.findById(id).populate({
     path: "user comments.user",
   });
   return post;
-});
+};
 
 export default model("Post", postsSchema);
