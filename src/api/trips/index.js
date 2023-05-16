@@ -128,4 +128,40 @@ tripsRouter.get("/:tripId/chats", async (req, res, next) => {
   }
 });
 
+tripsRouter.post("/:tripId/adventurerList", async (req, res, next) => {
+  try {
+    const { adventurers } = req.body;
+    const newAdventurerObjectId = adventurers[0];
+
+    const updatedTrip = await TripModel.findByIdAndUpdate(
+      req.params.tripId,
+      { $addToSet: { adventurers: newAdventurerObjectId } },
+      { new: true, runValidators: true }
+    );
+
+    if (updatedTrip) {
+      res.status(201).send(updatedTrip);
+    } else {
+      next(createHttpError(404, `Id ${req.params.tripId} is already there!`));
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+tripsRouter.get("/:tripId/adventurerList", async (req, res, next) => {
+  try {
+    const trip = await TripModel.findById(req.params.tripId);
+    if (trip) {
+      res.send(trip);
+    } else {
+      next(
+        createHttpError(404, `Trip with id ${req.params.tripId} not found!`)
+      );
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default tripsRouter;

@@ -10,9 +10,9 @@ const chatHistorySchema = new Schema(
   { timestamps: true }
 );
 
-const tripsSchema = new Schema(
+const tripSchema = new Schema(
   {
-    user: { type: Schema.Types.ObjectId, ref: "User" },
+    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
     title: { type: String, required: true },
     destination: { type: String, required: true },
     date: { type: Date, required: true },
@@ -28,13 +28,13 @@ const tripsSchema = new Schema(
     },
     budget: { type: Number },
     addOns: { type: String },
-    adventurers: { type: [Schema.Types.ObjectId], ref: "User" },
+    adventurers: [{ type: Schema.Types.ObjectId, ref: "User" }],
     chatHistory: [chatHistorySchema],
   },
   { timestamps: true }
 );
 
-tripsSchema.static("findTripsWithUsers", async function (query) {
+tripSchema.statics.findTripsWithUsers = async function (query) {
   const trips = await this.find(query.criteria, query.options.fields)
     .limit(query.options.limit)
     .skip(query.options.skip)
@@ -42,13 +42,17 @@ tripsSchema.static("findTripsWithUsers", async function (query) {
     .populate({ path: "user adventurers chatHistory.sender" });
   const total = await this.countDocuments(query.criteria);
   return { trips, total };
-});
+};
 
-tripsSchema.static("findTripWithUser", async function (id) {
-  const trip = await this.findById(id).populate({
-    path: "user",
-  });
+tripSchema.statics.findTripWithUser = async function (id) {
+  const trip = await this.findById(id)
+    .populate({
+      path: "user adventurers",
+    })
+    .populate({
+      path: "chatHistory.sender",
+    });
   return trip;
-});
+};
 
-export default model("trips", tripsSchema);
+export default model("Trip", tripSchema);
