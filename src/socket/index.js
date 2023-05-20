@@ -1,4 +1,5 @@
-let adventurersList = [];
+// Declare an object to store onlineUsers arrays for each room
+const roomsOnlineUsers = {};
 
 export const newConnectionHandler = (socket, io) => {
   // "connection" is NOT A CUSTOM EVENT. This is a socket.io event, it's triggered every time a new client connects!
@@ -9,22 +10,48 @@ export const newConnectionHandler = (socket, io) => {
   socket.on("joinRoom", (room) => {
     console.log("Room Id", room);
     socket.join(room);
-    socket.emit("welcome", {
-      message: `HELLO ${socket.id}, welcome to the gig`,
-    });
 
+    if (!roomsOnlineUsers[room]) {
+      roomsOnlineUsers[room] = [];
+    }
+
+    const onlineUsers = roomsOnlineUsers[room];
     // 2. Listen to an event emitted by FE called "setUsername", this event should contain the username in the payload
     socket.on("setUsername", (payload) => {
+      socket.emit("welcome", {
+        message: `Welcome ${payload} onboard!!`,
+      });
       console.log("username:", payload);
 
+      const existingUserIndex = onlineUsers.findIndex(
+        (user) => user.socketId === socket.id
+      );
+
+      if (existingUserIndex !== -1) {
+        // User already exists, update the username
+        onlineUsers[existingUserIndex].username = payload;
+      } else {
+        // New user, add to the onlineUsers array
+        onlineUsers.push({
+          username: payload,
+          socketId: socket.id,
+        });
+      }
+
+      const newUserArray = [...onlineUsers];
+      console.log("Updated onlineUsers Array:", newUserArray);
       // 2.1 Whenever we receive the username, we have to keep track of it together with the socket.id
-      adventurersList.push({ username: payload.username, socketId: socket.id });
+      // onlineUsers.push(...onlineUsers, {
+      //   username: payload,
+      //   socketId: socket.id,
+      // });
+      // console.log("line 22 ", onlineUsers);
 
       // 2.2 Then we have to send the list of online users to the current user that just "logged in"
-      socket.emit("loggedIn", adventurersList);
+      socket.emit("loggedIn", newUserArray);
 
       // 2.3 We have also to inform everybody else of the new user which just joined
-      socket.broadcast.to(room).emit("updateAdventurersList", adventurersList);
+      socket.broadcast.to(room).emit("updateOnlineUsersList", newUserArray);
     });
 
     // 3. Listen for an event called "sendMessage", this is triggered when a user sends a new chat message
@@ -35,13 +62,11 @@ export const newConnectionHandler = (socket, io) => {
 
     // 4. Listen for an event called "disconnect" (this is NOT A CUSTOM EVENT!). This event happens when an user closes the browser/tab/window
     socket.on("disconnect", () => {
-      // 4.1 Server shall update the list of onlineUsers by removing the one that has disconnected
-      adventurersList = adventurersList.filter(
+      const filteredUsers = onlineUsers.filter(
         (user) => user.socketId !== socket.id
       );
-
-      // 4.2 We have to notify everybody who is still connected by communicating the updated list
-      socket.broadcast.to(room).emit("updateOnlineUsersList", adventurersList);
+      roomsOnlineUsers[room] = filteredUsers;
+      socket.broadcast.to(room).emit("updateOnlineUsersList", filteredUsers);
       io.emit("message", "A user has left the party");
     });
   });
